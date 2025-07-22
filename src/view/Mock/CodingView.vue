@@ -37,18 +37,29 @@
           </div>
         </div>
 
+        <!-- 右侧代码编辑器区域（替换原有textarea） -->
         <div class="editor-section">
           <div class="lang-toolbar">
-            <select>
-              <option>Java</option>
-              <option>Python</option>
-              <option>JavaScript</option>
+            <select v-model="selectedLang" @change="changeLanguage">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
             </select>
-            <button>重置</button>
-            <button>代码格式化</button>
+            <button @click="resetCode">重置</button>
+            <button @click="formatCode">代码格式化</button>
           </div>
-          <textarea class="code-editor" placeholder="编写代码..."></textarea>
-          <button class="btn-submit">保存并测试</button>
+
+          <!-- 代码编辑器组件 -->
+          <codemirror
+            v-model="code"
+            :style="{ height: '300px' }"
+            :extensions="extensions"
+            :autofocus="true"
+            @ready="handleEditorReady"
+            @change="handleCodeChange"
+          />
+
+          <button class="btn-submit" @click="submitCode">保存并测试</button>
         </div>
       </div>
     </div>
@@ -56,17 +67,33 @@
 </template>
 
 <script>
+// 导入代码编辑器相关依赖
+import { Codemirror } from 'vue-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { python } from '@codemirror/lang-python'
+import { java } from '@codemirror/lang-java'
+
 export default {
+  components: {
+    Codemirror
+  },
   data() {
     return {
       showCamera: false,
       remainingTime: 3600,
+      // 代码编辑器相关
+      code: 'console.log("Hello, world!");', // 默认代码
+      selectedLang: 'javascript', // 默认语言
+      extensions: [javascript(), oneDark], // 编辑器扩展（语言+主题）
+      editorView: null // 编辑器实例
     };
   },
   mounted() {
     this.startTimer();
   },
   methods: {
+    // 原有方法保持不变
     toggleCameraView() {
       this.showCamera = !this.showCamera;
     },
@@ -86,12 +113,63 @@ export default {
       return `${min}:${sec.toString().padStart(2, '0')}`;
     },
     endInterview() {
-      this.$router.push('/interview-result');
+      this.$router.push('/review');
       alert('面试结束');
     },
-    beforeUnmount() {
-    clearInterval(this.timer);
+
+    // 代码编辑器新增方法
+    handleEditorReady(payload) {
+      // 保存编辑器实例（用于后续操作）
+      this.editorView = payload.view;
+    },
+    handleCodeChange(value) {
+      // 监听代码变化（可选）
+      console.log('代码变化:', value);
+    },
+    resetCode() {
+      // 重置代码
+      this.code = this.selectedLang === 'javascript'
+        ? 'console.log("Hello, world!");'
+        : this.selectedLang === 'python'
+          ? 'print("Hello, world!")'
+          : 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, world!");\n  }\n}';
+    },
+    changeLanguage() {
+  switch (this.selectedLang) {
+    case 'javascript':
+      this.extensions = [javascript(), oneDark];
+      break;
+    case 'python':
+      this.extensions = [python(), oneDark];
+      break;
+    case 'java':
+      this.extensions = [java(), oneDark];
+      break;
+    default:
+      this.extensions = [javascript(), oneDark];
   }
+  this.resetCode();
+},
+    formatCode() {
+      // 代码格式化（需结合具体语言的格式化工具，这里仅示例）
+      if (this.editorView) {
+        // 简单格式化示例（实际需集成prettier等工具）
+        const formatted = this.code.replace(/;/g, ';\n');
+        this.code = formatted;
+      }
+    },
+    submitCode() {
+      // 提交代码逻辑
+      console.log('提交的代码:', this.code);
+      alert('代码已提交，正在测试...');
+    }
+  },
+  beforeUnmount() {
+    clearInterval(this.timer);
+    // 销毁编辑器实例
+    if (this.editorView) {
+      this.editorView.destroy();
+    }
   }
 };
 </script>
@@ -137,10 +215,10 @@ export default {
     align-items: center;
 
     .toggle-cam-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #4299e1;
+      width: 50px;
+      height: 70px;
+      border-radius: 80%;
+      background: #52aff1;
       color: white;
       border: none;
       cursor: pointer;
@@ -258,16 +336,6 @@ export default {
           }
         }
 
-        .code-editor {
-          width: 100%;
-          height: 300px;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 1rem;
-          resize: vertical;
-          outline: none;
-        }
-
         .btn-submit {
           width: 100%;
           padding: 1rem;
@@ -286,5 +354,9 @@ export default {
       }
     }
   }
+}
+.editor-section ::v-deep .cm-content {
+  text-align: left !important;
+  font-size: 16px; // 这里也可以设置编辑区域内容的字体大小
 }
 </style>
