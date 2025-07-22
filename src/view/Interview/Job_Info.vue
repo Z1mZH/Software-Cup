@@ -144,18 +144,9 @@ export default {
             companyName: "",
             companyInfo: "",
             selectedJob: null, // 选中的岗位
-            jobs: [
-                { id: 1, name: "前端工程师", industryId: 1, desc: "负责前端开发，熟练Vue/React" },
-                { id: 2, name: "后端工程师", industryId: 1, desc: "处理后端逻辑，精通Java/Python" },
-                { id: 3, name: "硬件工程师", industryId: 2, desc: "设计硬件电路，熟悉PCB Layout" },
-                // 更多岗位...
-            ],
+            jobs: [], // 不提供预设岗位，让用户自由输入
             jobDescription: "",
-            companies: [
-                    { name: "阿里巴巴" },
-                    { name: "腾讯" },
-                    // ... 公司数据 ...
-                  ],
+            companies: [], // 不提供预设公司，让用户自由输入
         };
     },
     computed: {
@@ -192,32 +183,56 @@ export default {
         // 选择行业
         selectCategory(category) {
             this.selectedCategory = category;
-            this.selectedJob = null; // 重置岗位选择
-            this.jobDescription = ""; // 清空描述
+            // 不再重置任何内容，保留用户已输入的信息
         },
 
-        // 搜索岗位（自动完成逻辑）
+        // 搜索岗位（移除自动完成，改为普通输入）
         queryJobs(queryString, callback) {
-            const results = this.filteredJobs
-                .filter(job => job.name.toLowerCase().includes(queryString.toLowerCase()))
-                .map(job => ({
-                    value: job.name, // 必须包含value字段，作为显示值
-                    job: job // 可选：存储完整的岗位对象供后续使用
-                }));
-            callback(results); // 返回格式化后的数据
+            // 不提供任何建议，返回空数组
+            callback([]);
         },
       queryCompanies(queryString, callback) {
-      const results = this.companies
-        .filter(company => company.name.toLowerCase().includes(queryString.toLowerCase()))
-        .map(company => ({ value: company.name, company: company }));
-      callback(results);
+      // 不提供任何建议，返回空数组
+      callback([]);
     },
 
-        // 修复岗位选择处理方法
+        // 修复岗位选择处理方法（不再自动填充描述）
         handleJobSelect(item) {
-            // 从选项中提取完整的岗位对象
-            this.selectedJob = this.jobs.find(job => job.name === item.value);
-            this.jobDescription = this.selectedJob?.desc || '请输入岗位描述';
+            // 仅保留用户输入的岗位名称
+            this.jobTitle = item.value || item;
+        },
+        
+        // 处理公司选择
+        handleCompanySelect(item) {
+            this.companyName = item.value;
+        },
+
+        // 生成prompt
+        generatePrompt() {
+            const industry = this.selectedCategory?.name || '未选择';
+            const job = this.jobTitle || '未填写';
+            const description = this.jobDescription || '未填写';
+            const company = this.companyName || '未填写';
+            
+            return `该用户选择的行业为${industry}，岗位名称为${job}，他对于岗位的描述是${description}，想要面试的公司名称为${company}`;
+        },
+
+        // 验证表单
+        validateForm() {
+            if (!this.selectedCategory) {
+                this.$message.error('请选择行业');
+                return false;
+            }
+            if (!this.jobTitle) {
+                this.$message.error('请填写岗位名称');
+                return false;
+            }
+            if (!this.jobDescription) {
+                this.$message.error('请填写岗位描述');
+                return false;
+            }
+            // 公司名称为可选项，不做必填验证
+            return true;
         },
 
         // 提交数据（模拟）
@@ -235,7 +250,40 @@ export default {
       this.$router.push('/'); // 跳转到首页路径
     },
     goNext() {
-      this.$router.push('/sel_cv'); // 跳转到下一步页面
+        // 验证表单
+        if (!this.validateForm()) {
+            return;
+        }
+        
+        // 生成prompt
+        const prompt = this.generatePrompt();
+        
+        // 准备传递的数据
+        const jobData = {
+            industry: this.selectedCategory?.name,
+            industryId: this.selectedCategory?.id,
+            jobTitle: this.jobTitle,
+            jobDescription: this.jobDescription,
+            companyName: this.companyName,
+            prompt: prompt
+        };
+        
+        // 方式1：通过路由参数传递
+        this.$router.push({
+            path: '/sel_cv',
+            query: {
+                jobData: JSON.stringify(jobData)
+            }
+        });
+        
+        // 方式2：使用Vuex存储（如果项目中使用了Vuex）
+        // this.$store.commit('setJobData', jobData);
+        
+        // 方式3：使用sessionStorage存储
+        sessionStorage.setItem('jobData', JSON.stringify(jobData));
+        
+        console.log('生成的prompt:', prompt);
+        console.log('传递的数据:', jobData);
     }
     }
 };
