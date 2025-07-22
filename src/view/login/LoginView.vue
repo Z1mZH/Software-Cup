@@ -4,7 +4,12 @@
     <div class="login-left">
       <div class="login-content">
         <div class="logo-group">
-          <img src="@/assets/logo.png" alt="Logo" class="logo" />
+          <icon-park
+            type="Whale"
+            size="70"
+            fill="#4299e1"
+            class="feature-icon"
+          />
           <h1 class="app-name">OfferComing</h1>
         </div>
         <p class="welcome-message">欢迎回来，请登录您的账号</p>
@@ -18,7 +23,7 @@
               placeholder="请输入用户名"
               class="input-field"
             />
-            <i class="icon el-icon-user"></i>
+
           </div>
 
           <!-- 密码输入 -->
@@ -29,7 +34,6 @@
               placeholder="请输入密码"
               class="input-field"
             />
-            <i class="icon el-icon-lock"></i>
           </div>
 
           <!-- 记住密码 & 忘记密码 -->
@@ -68,7 +72,12 @@
           @mouseover="handleHover(0)"
           @mouseout="handleLeave(0)"
         >
-          <img src="@/assets/logo.png" alt="实时响应" class="feature-icon" />
+          <icon-park
+            type="Lightning"
+            size="60"
+            fill="#4299e1"
+            class="feature-icon"
+          />
           <h3>实时响应</h3>
           <p class="feature-desc">毫秒级响应，快速解答面试问题，模拟真实场景。</p>
         </div>
@@ -77,7 +86,12 @@
           @mouseover="handleHover(1)"
           @mouseout="handleLeave(1)"
         >
-          <img src="@/assets/logo.png" alt="匹配率" class="feature-icon" />
+          <icon-park
+            type="Aiming"
+            size="60"
+            fill="#4299e1"
+            class="feature-icon"
+          />
           <h3>95%匹配率</h3>
           <p class="feature-desc">精准匹配行业问题，覆盖95%以上技术场景。</p>
         </div>
@@ -86,18 +100,28 @@
           @mouseover="handleHover(2)"
           @mouseout="handleLeave(2)"
         >
-          <img src="@/assets/logo.png" alt="生成回答" class="feature-icon" />
-          <h3>1秒生成回答</h3>
-          <p class="feature-desc">AI算法支持，1秒内生成针对性面试回答。</p>
+          <icon-park
+            type="Key"
+            size="60"
+            fill="#4299e1"
+            class="feature-icon"
+          />
+          <h3>5秒生成反馈</h3>
+          <p class="feature-desc">AI算法支持，5秒内生成针对性面试反馈。</p>
         </div>
         <div
           class="feature-card"
           @mouseover="handleHover(3)"
           @mouseout="handleLeave(3)"
         >
-          <img src="@/assets/logo.png" alt="题库" class="feature-icon" />
+          <icon-park
+            type="Book"
+            size="60"
+            fill="#4299e1"
+            class="feature-icon"
+          />
           <h3>海量题库</h3>
-          <p class="feature-desc">覆盖1000+岗位，10万+面试真题。</p>
+          <p class="feature-desc">覆盖100+岗位，10万+面试真题。</p>
         </div>
       </div>
     </div>
@@ -107,6 +131,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { IconPark } from '@icon-park/vue-next/es/all';
+
 
 // 表单数据
 const username = ref('');
@@ -128,7 +154,7 @@ const handleLogin = async () => {
 
     if (isValid) {
       // 验证成功，跳转到面试界面
-      router.push('/job_info');
+      await router.push('/job_info');
     } else {
       alert('用户名或密码错误');
     }
@@ -184,12 +210,6 @@ const handleLeave = () => {
   margin-bottom: 20px;
 }
 
-.logo {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
-}
-
 .app-name {
   font-size: 24px;
   font-weight: 600;
@@ -221,12 +241,19 @@ const handleLeave = () => {
   border-color: #d6ddea;
 }
 
-.icon {
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
+.input-field:focus ~ .icon {
+  color: #3182ce;
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* 优势卡片图标动效 */
+.feature-icon {
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: rotate(360deg) scale(1.2);
+  filter: drop-shadow(0 0 8px rgba(58, 151, 212, 0.6));
 }
 
 .remember-forget {
@@ -281,7 +308,8 @@ const handleLeave = () => {
 
 /* 右侧背景图 */
 .features-section {
-  background: #f8fafc;
+  padding-top: 40px;
+  background: #dde9ea;
 }
 
 .features-grid {
@@ -289,7 +317,7 @@ const handleLeave = () => {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   grid-template-columns: repeat(2, 1fr);
-  padding-top: 50px;
+  padding: 35px;
 }
 
 .feature-card {
@@ -306,12 +334,6 @@ const handleLeave = () => {
   transform: scale(1.05); /* 悬浮时放大 */
   background: #f0f8ff; /* 淡蓝色背景加深 */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); /* 增强阴影 */
-}
-
-.feature-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
 }
 
 .feature-desc {

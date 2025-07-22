@@ -14,7 +14,7 @@
         <div class="content">
             <!-- 左侧行业选择 -->
             <div class="industry-column">
-              <label class="label">行业名称</label>
+              <label class="label">行业名称*</label>
                 <div class="industry-wrapper">
                     <div
                         v-for="category in displayedCategories"
@@ -54,11 +54,11 @@
             <div class="form-column">
                 <!-- 岗位名称搜索（自动完成） -->
                 <div class="form-group">
-                    <label class="label">岗位名称</label>
+                    <label class="label">岗位名称*</label>
                     <el-autocomplete
                         v-model="jobTitle"
                         :fetch-suggestions="queryJobs"
-                        placeholder="输入或选择岗位名称"
+                        placeholder="请输入目标岗位名称"
                         @select="handleJobSelect"
                         :value-key="name"
                         class="input"
@@ -71,10 +71,10 @@
 
                 <!-- 岗位描述（自动生成 + 可编辑） -->
                 <div class="form-group">
-                    <label class="label">岗位描述</label>
+                    <label class="label">岗位描述*</label>
                     <textarea
                         v-model="jobDescription"
-                        placeholder="自动生成的岗位描述，可在此编辑"
+                        placeholder="请编辑岗位描述"
                         class="textarea"
                         rows="5"
                     />
@@ -82,11 +82,11 @@
 
                 <!-- 公司名称（可选） -->
                 <div class="form-group">
-                    <label class="label">公司名称</label>
+                    <label class="label">公司名称*</label>
                     <el-autocomplete
     v-model="companyName"
     :fetch-suggestions="queryCompanies"
-    placeholder="请输入公司名称（如字节跳动）"
+    placeholder="请输入公司名称"
     @select="handleCompanySelect"
     :value-key="name"
     class="input"
@@ -127,15 +127,16 @@ export default {
             ],
             currentStep: 0,
             categories: [
-                { id: 1, name: "互联网" },
-                { id: 2, name: "硬件" },
-                { id: 3, name: "教育" },
-                { id: 4, name: "金融" },
-                { id: 5, name: "医疗" },
+                { id: 1, name: "人工智能" },
+                { id: 2, name: "大数据" },
+                { id: 3, name: "物联网" },
+                { id: 4, name: "教育" },
+                { id: 5, name: "智能系统" },
                 { id: 6, name: "零售" },
                 { id: 7, name: "物流" },
                 { id: 8, name: "制造" },
-                { id: 9, name: "传媒" }
+                { id: 9, name: "传媒" },
+                { id: 10, name: "金融" }
             ],
             currentPage: 0,
             pageSize: 5, // 每页显示6个卡片
@@ -426,49 +427,104 @@ export default {
         }
     }
 
-    .form-column {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+      // 右侧表单区域
+  .form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
 
+    .form-group {
+      width: 100%;
 
-        .form-group {
-            width: 100%;
+      .label {
+        font-size: 18px;
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 12px;
+        display: block;
+      }
 
-            .label {
-                font-size: 16px;
-                color: #2d3748;
-                margin-bottom: 8px;
-            }
+      .input,
+      .textarea {
+        width: 100% !important;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #fdfdfd;
+        transition: all 0.3s;
+        box-shadow: inset 0 2px 4px rgb(255, 255, 255);
 
-            .input,
-            .textarea {
-                width: 100% !important;
-                padding: 8px;
-                border: 1px solid #e0e0e0; // 统一1px边框
-                border-radius: 8px; // 统一圆角
-                font-size: 16px;
-                transition: border-color 0.3s;
-
-                &:focus {
-                    border-color: #409eff;
-                    outline: none;
-                }
-            }
-
-            .textarea {
-                resize: vertical;
-                margin-top: 20px;
-                min-height: 130px; // 保持高度一致
-            }
-
-            // 调整Element Autocomplete的下拉菜单样式（可选）
-            .el-autocomplete-suggestion {
-                border-radius: 8px;
-                border: 1px solid #e0e0e0;
-            }
+        &:focus {
+          outline: none;
+          background: #ffffff;
+          box-shadow: 0 0 0 2px #e6f3ff,
+                     inset 0 2px 4px rgba(0, 0, 0, 0.01);
         }
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+
+      .textarea {
+        resize: vertical;
+        min-height: 150px;
+        line-height: 1.6;
+      }
+
+      // Element-Plus 自动完成组件样式覆盖
+      ::v-deep .el-autocomplete {
+        width: 105%;
+
+        .el-input__wrapper {
+          border: none;
+          border-radius: 12px;
+          background: #ffffff;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+
+          &:hover,
+          &:focus {
+            box-shadow: inset 0 2px 4px rgb(253, 253, 253);
+          }
+
+          .el-input__inner {
+            padding: 12px 16px;
+            font-size: 16px;
+            color: #333;
+            height: auto;
+            border-radius: 12px;
+          }
+        }
+
+        .el-autocomplete-suggestion {
+          border-radius: 12px;
+          border: none;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.06);;
+          margin-top: 8px;
+
+          .el-autocomplete-suggestion__list {
+            padding: 0;
+
+            .el-autocomplete-suggestion__item {
+              padding: 12px 16px;
+              border-bottom: 1px solid #f0f0f0;
+              color: #333;
+
+              &:last-child {
+                border-bottom: none;
+              }
+
+              &:hover {
+                background: #f9fcff;
+              }
+            }
+          }
+        }
+      }
     }
+  }
 
     .buttons {
         margin-top: 30px;
@@ -485,7 +541,7 @@ export default {
     .buttons {
   display: flex;
   gap: 80px;
-  margin-top: 0px;
+  margin-top: 0;
   justify-content: flex-end; // 靠右对齐，符合表单操作习惯
 
   .btn-back,

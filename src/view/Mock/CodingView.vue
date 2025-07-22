@@ -7,7 +7,7 @@
     </div>
     <button class="end-btn" @click="endInterview">结束面试</button>
   </div>
-  
+
   <div class="coding-interview-page">
     <div class="left-control">
       <button class="toggle-cam-btn" @click="toggleCameraView">
@@ -46,12 +46,12 @@
           <div class="problem-desc" v-if="currentQuestion">
             <h4>题目要求</h4>
             <div class="description">{{ currentQuestion.question }}</div>
-            
+
             <div class="tips-section" v-if="currentQuestion.tips">
               <h5>解题提示：</h5>
               <div class="tips-content">{{ currentQuestion.tips }}</div>
             </div>
-            
+
             <div class="code-template-section" v-if="currentQuestion.codeTemplate">
               <h5>代码模板：</h5>
               <pre class="code-template">{{ currentQuestion.codeTemplate }}</pre>
@@ -92,7 +92,7 @@
               <span v-else>提交中...</span>
             </button>
           </div>
-          
+
           <!-- 测试结果显示 -->
           <div class="test-results" v-if="testResults">
             <h4>测试结果：</h4>
@@ -106,7 +106,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 评测结果弹窗 -->
     <div class="evaluation-modal" v-if="showEvaluationModal">
       <div class="modal-content">
@@ -171,19 +171,19 @@ export default {
       showCamera: false,
       cameraStream: null,
       isCameraActive: false,
-      
+
       // 题目相关
       codeQuestions: [],
       currentQuestionIndex: 0,
       totalQuestions: 2,
       currentQuestion: null,
-      
+
       // 时间相关
       remainingTime: 3600, // 总时间60分钟
       questionRemainingTime: 1800, // 每题30分钟
       questionTimer: null,
       totalTimer: null,
-      
+
       // 代码编辑器相关
       code: '',
       selectedLang: 'javascript',
@@ -191,23 +191,23 @@ export default {
       editorView: null,
       saveStatus: '',
       autoSaveTimer: null,
-      
+
       // 提交相关
       isSubmitting: false,
       hasTestedCode: false,
       testResults: null,
-      
+
       // 图像采集相关
       isCapturingImages: false,
       capturedImages: [],
       imageCaptureInterval: null,
       imageAnalysisResults: [],
-      
+
       // 代码评测相关
       codeEvaluations: [],
       currentEvaluation: null,
       showEvaluationModal: false,
-      
+
       // 所有答题数据
       codingData: {
         questions: [],
@@ -231,15 +231,15 @@ export default {
         this.$router.push('/config_view');
         return;
       }
-      
+
       const interviewConfig = JSON.parse(configData);
-      
+
       // 正确获取编程题目
       // 优先从 allQuestions 中筛选出编程题
       if (interviewConfig.allQuestions) {
         this.codeQuestions = interviewConfig.allQuestions.filter(q => q.type === 'coding');
       }
-      
+
       // 如果没有，尝试从原始分类中获取
       if (this.codeQuestions.length === 0 && interviewConfig.originalQuestions?.codingQuestions) {
         this.codeQuestions = interviewConfig.originalQuestions.codingQuestions.map(q => ({
@@ -249,48 +249,48 @@ export default {
           codeTemplate: q.codeTemplate || ''
         }));
       }
-      
+
       // 如果还是没有，尝试直接使用 codeQuestions
       if (this.codeQuestions.length === 0 && interviewConfig.codeQuestions) {
         this.codeQuestions = interviewConfig.codeQuestions;
       }
-      
+
       this.totalQuestions = this.codeQuestions.length;
-      
+
       console.log('获取到的编程题目:', this.codeQuestions);
-      
+
       if (this.totalQuestions === 0) {
         alert('没有编程题，返回配置页面');
         this.$router.push('/config_view');
         return;
       }
-      
+
       this.codingData.jobInfo = interviewConfig.config?.jobInfo || interviewConfig.jobInfo;
       this.codingData.startTime = new Date().toISOString();
-      
+
       // 初始化摄像头
       await this.initializeCamera();
-      
+
       // 开始计时
       this.startTimers();
-      
+
       // 加载第一题
       this.loadQuestion(0);
-      
+
       // 开始图像采集
       this.startImageCapture();
     },
-    
+
     async initializeCamera() {
       try {
-        this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
+        this.cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
             width: { ideal: 640 },
             height: { ideal: 480 },
             facingMode: 'user'
           }
         });
-        
+
         if (this.$refs.cameraVideo) {
           this.$refs.cameraVideo.srcObject = this.cameraStream;
           this.isCameraActive = true;
@@ -300,7 +300,7 @@ export default {
         alert('请允许使用摄像头以进行面试');
       }
     },
-    
+
     startTimers() {
       // 总计时器
       this.totalTimer = setInterval(() => {
@@ -310,7 +310,7 @@ export default {
           this.endInterview();
         }
       }, 1000);
-      
+
       // 题目计时器
       this.questionTimer = setInterval(() => {
         if (this.questionRemainingTime > 0) {
@@ -320,40 +320,40 @@ export default {
         }
       }, 1000);
     },
-    
+
     loadQuestion(index) {
       if (index >= this.totalQuestions) {
         this.endInterview();
         return;
       }
-      
+
       this.currentQuestionIndex = index;
       this.currentQuestion = this.codeQuestions[index];
       this.questionRemainingTime = 1800; // 重置题目时间
       this.hasTestedCode = false;
       this.testResults = null;
-      
+
       console.log('加载题目:', this.currentQuestion);
-      
+
       // 根据语言设置初始代码
       this.resetCode();
-      
+
       // 开启自动保存
       this.startAutoSave();
     },
-    
+
     startAutoSave() {
       // 清除之前的自动保存
       if (this.autoSaveTimer) {
         clearInterval(this.autoSaveTimer);
       }
-      
+
       // 每30秒自动保存一次
       this.autoSaveTimer = setInterval(() => {
         this.saveCode();
       }, 30000);
     },
-    
+
     saveCode() {
       // 保存代码到sessionStorage
       const saveData = {
@@ -362,65 +362,65 @@ export default {
         language: this.selectedLang,
         timestamp: new Date().toISOString()
       };
-      
+
       sessionStorage.setItem(`code_q${this.currentQuestionIndex}`, JSON.stringify(saveData));
       this.saveStatus = '已自动保存';
-      
+
       setTimeout(() => {
         this.saveStatus = '';
       }, 2000);
     },
-    
+
     // 图像采集相关方法
     startImageCapture() {
       if (!this.cameraStream || this.isCapturingImages) return;
-      
+
       this.isCapturingImages = true;
       console.log('开始定期采集用户图像');
-      
+
       // 立即捕获第一张
       this.captureImage();
-      
+
       // 每分钟捕获一张图像
       this.imageCaptureInterval = setInterval(() => {
         this.captureImage();
       }, 60000); // 60秒
     },
-    
+
     captureImage() {
       if (!this.$refs.cameraVideo) return;
-      
+
       const video = this.$refs.cameraVideo;
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0);
-      
+
       const imageDataURL = canvas.toDataURL('image/jpeg', 0.8);
-      
+
       this.capturedImages.push({
         image: imageDataURL,
         timestamp: new Date().toISOString(),
         questionIndex: this.currentQuestionIndex
       });
-      
+
       console.log(`已捕获第 ${this.capturedImages.length} 张图像`);
-      
+
       // 每采集5张图像进行一次分析
       if (this.capturedImages.length % 5 === 0) {
         this.analyzeRecentImages();
       }
     },
-    
+
     async analyzeRecentImages() {
       try {
         // 获取最近5张图像
         const recentImages = this.capturedImages.slice(-5);
         const jobInfo = this.codingData.jobInfo;
         const currentQuestionTitle = this.currentQuestion?.question || '编程题';
-        
+
         const analysisPrompt = `
 你是一位经验丰富的技术面试官，正在观察应聘者编程过程中的状态。请基于以下5张图像（每分钟一张），分析应聘者的编程状态和专注度。
 
@@ -452,7 +452,7 @@ export default {
           type: "image_url",
           image_url: { url: item.image }
         }));
-        
+
         const response = await openai.chat.completions.create({
           model: "qwen-vl-max-latest",
           messages: [{
@@ -471,52 +471,52 @@ export default {
 
         let content = response.choices[0].message.content;
         content = content.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
-        
+
         const analysisResult = JSON.parse(content);
-        
+
         this.imageAnalysisResults.push({
           timestamp: new Date().toISOString(),
           questionIndex: this.currentQuestionIndex,
           analysis: analysisResult,
           imageCount: recentImages.length
         });
-        
+
         console.log('编程状态分析结果：', analysisResult);
-        
+
       } catch (error) {
         console.error('图像分析失败:', error);
       }
     },
-    
+
     // 代码编辑器相关方法
     toggleCameraView() {
       this.showCamera = !this.showCamera;
     },
-    
+
     handleEditorReady(payload) {
       this.editorView = payload.view;
     },
-    
+
     handleCodeChange() {
       // 代码变化时清除测试结果
       this.testResults = null;
       this.hasTestedCode = false;
     },
-    
+
     resetCode() {
       // 如果题目提供了代码模板，使用题目的模板
       if (this.currentQuestion?.codeTemplate) {
         this.code = this.currentQuestion.codeTemplate;
         return;
       }
-      
+
       // 否则使用默认模板
       const questionText = this.currentQuestion?.question || '解决方案';
       const templates = {
         javascript: `// ${questionText}
 function solution(input) {
     // 在这里编写你的代码
-    
+
 }
 
 // 测试代码
@@ -535,16 +535,16 @@ if __name__ == "__main__":
         // 在这里编写你的代码
         return null;
     }
-    
+
     public static void main(String[] args) {
         System.out.println(solution(null));
     }
 }`
       };
-      
+
       this.code = templates[this.selectedLang] || templates.javascript;
     },
-    
+
     changeLanguage() {
       switch (this.selectedLang) {
         case 'javascript':
@@ -561,7 +561,7 @@ if __name__ == "__main__":
       }
       this.resetCode();
     },
-    
+
     formatCode() {
       // 简单的代码格式化
       if (this.selectedLang === 'javascript') {
@@ -572,18 +572,18 @@ if __name__ == "__main__":
       }
       this.saveCode();
     },
-    
+
     // 测试代码
     async testCode() {
       this.isSubmitting = true;
       this.testResults = [];
-      
+
       try {
         // 模拟测试用例运行
         // 简单模拟3个测试用例
         for (let i = 0; i < 3; i++) {
           const passed = Math.random() > 0.3; // 模拟70%通过率
-          
+
           this.testResults.push({
             passed: passed,
             message: passed ? '通过' : '输出不匹配',
@@ -592,9 +592,9 @@ if __name__ == "__main__":
             actualOutput: passed ? `期望输出${i + 1}` : '错误输出'
           });
         }
-        
+
         this.hasTestedCode = true;
-        
+
       } catch (error) {
         console.error('测试失败:', error);
         alert('测试运行失败，请检查代码');
@@ -602,21 +602,21 @@ if __name__ == "__main__":
         this.isSubmitting = false;
       }
     },
-    
+
     // 提交代码并评测
     async submitCode(isAutoSubmit = false) {
       if (!isAutoSubmit && !this.hasTestedCode) {
         alert('请先运行测试');
         return;
       }
-      
+
       this.isSubmitting = true;
       this.saveCode();
-      
+
       try {
         // 调用AI进行代码评测
         const evaluation = await this.evaluateCode();
-        
+
         // 保存评测结果
         this.codeEvaluations.push({
           questionIndex: this.currentQuestionIndex,
@@ -626,7 +626,7 @@ if __name__ == "__main__":
           evaluation: evaluation,
           timestamp: new Date().toISOString()
         });
-        
+
         // 保存当前题目数据
         this.codingData.questions.push({
           questionIndex: this.currentQuestionIndex,
@@ -637,11 +637,11 @@ if __name__ == "__main__":
           evaluation: evaluation,
           submittedAt: new Date().toISOString()
         });
-        
+
         // 显示评测结果
         this.currentEvaluation = evaluation;
         this.showEvaluationModal = true;
-        
+
       } catch (error) {
         console.error('提交失败:', error);
         alert('代码提交失败，请重试');
@@ -649,11 +649,11 @@ if __name__ == "__main__":
         this.isSubmitting = false;
       }
     },
-    
+
     async evaluateCode() {
       const questionText = this.currentQuestion?.question || '编程题';
       const tips = this.currentQuestion?.tips || '无';
-      
+
       const prompt = `
 你是一位资深的技术面试官，请评测以下编程题的代码解答。
 
@@ -709,13 +709,13 @@ ${this.code}
 
       let content = response.choices[0].message.content;
       content = content.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
-      
+
       return JSON.parse(content);
     },
-    
+
     closeEvaluationModal() {
       this.showEvaluationModal = false;
-      
+
       // 进入下一题
       if (this.currentQuestionIndex < this.totalQuestions - 1) {
         this.loadQuestion(this.currentQuestionIndex + 1);
@@ -723,7 +723,7 @@ ${this.code}
         this.endInterview();
       }
     },
-    
+
     getDimensionName(key) {
       const names = {
         correctness: '代码正确性',
@@ -735,35 +735,35 @@ ${this.code}
       };
       return names[key] || key;
     },
-    
+
     formatTime(seconds) {
       const min = Math.floor(seconds / 60);
       const sec = seconds % 60;
       return `${min}:${sec.toString().padStart(2, '0')}`;
     },
-    
+
     async endInterview() {
       // 清理定时器
       clearInterval(this.totalTimer);
       clearInterval(this.questionTimer);
       clearInterval(this.autoSaveTimer);
       clearInterval(this.imageCaptureInterval);
-      
+
       // 如果当前题目未提交，自动提交
       if (this.code && !this.showEvaluationModal) {
         await this.submitCode(true);
       }
-      
+
       // 最后一次图像分析
       if (this.capturedImages.length > 0) {
         await this.analyzeRecentImages();
       }
-      
+
       // 准备数据
       this.codingData.endTime = new Date().toISOString();
       this.codingData.imageAnalysisResults = this.imageAnalysisResults;
       this.codingData.codeEvaluations = this.codeEvaluations;
-      
+
       const codingResult = {
         ...this.codingData,
         summary: {
@@ -774,29 +774,29 @@ ${this.code}
           averageScore: this.calculateAverageScore()
         }
       };
-      
+
       console.log('编程面试结果汇总：', codingResult);
-      
+
       // 合并之前的面试结果
       const previousResult = JSON.parse(sessionStorage.getItem('interviewResult') || '{}');
       const finalResult = {
         ...previousResult,
         codingInterview: codingResult
       };
-      
+
       sessionStorage.setItem('interviewResult', JSON.stringify(finalResult));
-      
+
       // 跳转到总结页面
       this.$router.push('/review');
     },
-    
+
     calculateAverageScore() {
       if (this.codeEvaluations.length === 0) return 0;
-      
+
       const totalScore = this.codeEvaluations.reduce((sum, evaluation) => {
         return sum + (evaluation.evaluation?.totalScore || 0);
       }, 0);
-      
+
       return (totalScore / this.codeEvaluations.length).toFixed(1);
     }
   },
@@ -806,12 +806,12 @@ ${this.code}
     clearInterval(this.questionTimer);
     clearInterval(this.autoSaveTimer);
     clearInterval(this.imageCaptureInterval);
-    
+
     // 停止摄像头
     if (this.cameraStream) {
       this.cameraStream.getTracks().forEach(track => track.stop());
     }
-    
+
     // 销毁编辑器实例
     if (this.editorView) {
       this.editorView.destroy();
@@ -833,12 +833,12 @@ ${this.code}
     display: flex;
     gap: 20px;
     align-items: center;
-    
+
     span {
       font-size: 14px;
       color: #666;
     }
-    
+
     .timer {
       font-weight: 500;
       color: #ff4d4f;
@@ -884,7 +884,7 @@ ${this.code}
       transition: all 0.3s;
       font-size: 12px;
       writing-mode: vertical-lr;
-      
+
       &:hover {
         transform: scale(1.05);
         background: #3182ce;
@@ -935,7 +935,7 @@ ${this.code}
           color: #22c55e;
           font-weight: 500;
           margin-bottom: 1rem;
-          
+
           .online-dot {
             display: inline-block;
             width: 8px;
@@ -944,7 +944,7 @@ ${this.code}
             background: #22c55e;
             margin-right: 4px;
           }
-          
+
           .capture-status {
             margin-left: 10px;
             color: #1890ff;
@@ -958,14 +958,14 @@ ${this.code}
           background: #e5e7eb;
           border-radius: 8px;
         }
-        
+
         .camera-container {
           width: 100%;
           height: 200px;
           border-radius: 8px;
           overflow: hidden;
           background: #000;
-          
+
           .camera-video {
             width: 100%;
             height: 100%;
@@ -993,36 +993,36 @@ ${this.code}
           color: #2d3748;
           margin-bottom: 0.5rem;
         }
-        
+
         .time-info {
           color: #ff4d4f;
           font-size: 0.9rem;
           margin-bottom: 1rem;
         }
-        
+
         .problem-desc {
           h4 {
             font-size: 1.1rem;
             color: #2d3748;
             margin-bottom: 1rem;
           }
-          
+
           .description {
             color: #4b5563;
             line-height: 1.6;
             margin-bottom: 1.5rem;
             white-space: pre-wrap;
           }
-          
+
           .tips-section, .code-template-section {
             margin-top: 1.5rem;
-            
+
             h5 {
               font-size: 1rem;
               color: #2d3748;
               margin-bottom: 0.5rem;
             }
-            
+
             .tips-content {
               background: #e6f4ff;
               padding: 1rem;
@@ -1030,7 +1030,7 @@ ${this.code}
               color: #1890ff;
               line-height: 1.6;
             }
-            
+
             .code-template {
               background: #f8f9fa;
               padding: 1rem;
@@ -1065,7 +1065,7 @@ ${this.code}
             border: 1px solid #e5e7eb;
             outline: none;
             cursor: pointer;
-            
+
             &:focus {
               border-color: #4299e1;
             }
@@ -1079,12 +1079,12 @@ ${this.code}
             color: #4b5563;
             cursor: pointer;
             transition: all 0.3s;
-            
+
             &:hover {
               background: #d1d5db;
             }
           }
-          
+
           .save-status {
             margin-left: auto;
             color: #22c55e;
@@ -1096,7 +1096,7 @@ ${this.code}
           display: flex;
           gap: 1rem;
           margin-top: 1rem;
-          
+
           .btn-test, .btn-submit {
             flex: 1;
             padding: 1rem;
@@ -1106,51 +1106,51 @@ ${this.code}
             font-size: 1rem;
             font-weight: 500;
             transition: all 0.3s;
-            
+
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
             }
           }
-          
+
           .btn-test {
             background: #e5e7eb;
             color: #4b5563;
-            
+
             &:hover:not(:disabled) {
               background: #d1d5db;
             }
           }
-          
+
           .btn-submit {
             background: #4299e1;
             color: white;
-            
+
             &:hover:not(:disabled) {
               background: #3182ce;
               transform: translateY(-2px);
             }
           }
         }
-        
+
         .test-results {
           margin-top: 1rem;
           padding: 1rem;
           background: #f8f9fa;
           border-radius: 8px;
-          
+
           h4 {
             font-size: 1rem;
             margin-bottom: 0.5rem;
             color: #2d3748;
           }
-          
+
           .result-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin: 0.5rem 0;
-            
+
             .status {
               display: inline-block;
               width: 20px;
@@ -1160,11 +1160,11 @@ ${this.code}
               line-height: 20px;
               font-size: 12px;
               color: white;
-              
+
               &.passed {
                 background: #22c55e;
               }
-              
+
               &.failed {
                 background: #ef4444;
               }
@@ -1200,7 +1200,7 @@ ${this.code}
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  
+
   .modal-content {
     background: white;
     border-radius: 12px;
@@ -1209,13 +1209,13 @@ ${this.code}
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    
+
     h3 {
       font-size: 1.5rem;
       color: #2d3748;
       margin-bottom: 1rem;
     }
-    
+
     .evaluation-details {
       .score-section {
         text-align: center;
@@ -1223,34 +1223,34 @@ ${this.code}
         background: #f8f9fa;
         border-radius: 8px;
         margin-bottom: 1rem;
-        
+
         h4 {
           font-size: 1.25rem;
           color: #4299e1;
           margin: 0;
         }
       }
-      
+
       .dimension-scores {
         margin-bottom: 1.5rem;
-        
+
         .dimension {
           margin-bottom: 1rem;
           padding: 0.75rem;
           background: #f8f9fa;
           border-radius: 6px;
-          
+
           .dim-name {
             font-weight: 600;
             color: #2d3748;
           }
-          
+
           .dim-score {
             color: #4299e1;
             font-weight: 500;
             margin-left: 0.5rem;
           }
-          
+
           .dim-feedback {
             margin-top: 0.5rem;
             color: #4b5563;
@@ -1258,20 +1258,20 @@ ${this.code}
           }
         }
       }
-      
+
       .strengths, .improvements {
         margin-bottom: 1rem;
-        
+
         h5 {
           font-size: 1rem;
           color: #2d3748;
           margin-bottom: 0.5rem;
         }
-        
+
         ul {
           list-style-type: disc;
           padding-left: 1.5rem;
-          
+
           li {
             color: #4b5563;
             margin: 0.25rem 0;
@@ -1279,7 +1279,7 @@ ${this.code}
         }
       }
     }
-    
+
     .close-btn {
       width: 100%;
       padding: 1rem;
@@ -1291,7 +1291,7 @@ ${this.code}
       font-size: 1rem;
       font-weight: 500;
       transition: all 0.3s;
-      
+
       &:hover {
         background: #3182ce;
       }

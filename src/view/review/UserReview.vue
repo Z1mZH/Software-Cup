@@ -40,7 +40,7 @@
               <div ref="knowledgeChart" class="radar-chart"></div>
               <p class="chart-score">综合得分：{{ knowledgeScore }}/10</p>
             </div>
-            
+
             <!-- 面试表现雷达图 -->
             <div class="chart-wrapper">
               <h3>面试表现评估</h3>
@@ -127,10 +127,10 @@ export default {
     return {
       // 面试数据
       interviewData: null,
-      
+
       // 对话记录
       chatRecords: [],
-      
+
       // 雷达图数据
       knowledgeRadarData: {
         indicator: [],
@@ -140,26 +140,26 @@ export default {
         indicator: [],
         values: []
       },
-      
+
       // 分数
       knowledgeScore: 0,
       performanceScore: 0,
-      
+
       // AI总结
       aiSummary: '',
-      
+
       // 优缺点分析
       skillStrengths: [],
       skillWeaknesses: [],
       performanceStrengths: [],
       performanceWeaknesses: [],
-      
+
       // 录用建议
       hiringRecommendation: '',
       recommendationClass: ''
     };
   },
-  
+
   async mounted() {
     // 获取面试数据
     const storedData = sessionStorage.getItem('interviewResult');
@@ -168,52 +168,52 @@ export default {
       this.$router.push('/job_info');
       return;
     }
-    
+
     this.interviewData = JSON.parse(storedData);
-    
+
     // 处理对话记录
     this.processChatRecords();
-    
+
     // 分析专业知识
     await this.analyzeKnowledge();
-    
+
     // 处理面试表现数据
     this.processPerformanceData();
-    
+
     // 生成AI总结
     await this.generateAISummary();
-    
+
     // 初始化雷达图
     this.$nextTick(() => {
       this.initRadarCharts();
     });
   },
-  
+
   methods: {
     // 处理对话记录
     processChatRecords() {
       const records = [];
-      
+
       this.interviewData.questions.forEach((q) => {
         // 添加原始问题
         records.push({
           role: 'interviewer',
           content: q.originalQuestion
         });
-        
+
         // 添加第一次回答
         records.push({
           role: 'candidate',
           content: q.firstAnswer || '未识别到有效回答'
         });
-        
+
         // 添加追问
         if (q.followUpQuestion) {
           records.push({
             role: 'interviewer',
             content: `追问：${q.followUpQuestion}`
           });
-          
+
           // 添加追问回答
           records.push({
             role: 'candidate',
@@ -221,16 +221,16 @@ export default {
           });
         }
       });
-      
+
       this.chatRecords = records;
     },
-    
+
     // 分析专业知识
     async analyzeKnowledge() {
       try {
         const jobInfo = this.interviewData.jobInfo;
         const questions = this.interviewData.questions;
-        
+
         const analysisPrompt = `
 你是一位资深的技术面试官。请基于以下面试信息，评估应聘者的专业知识水平：
 
@@ -288,9 +288,9 @@ ${questions.map((q, index) => `
 
         let content = response.choices[0].message.content;
         content = content.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
-        
+
         const knowledgeAnalysis = JSON.parse(content);
-        
+
         // 设置雷达图数据
         this.knowledgeRadarData.indicator = [
           { name: '专业知识深度', max: 10 },
@@ -300,7 +300,7 @@ ${questions.map((q, index) => `
           { name: '学习能力', max: 10 },
           { name: '创新思维', max: 10 }
         ];
-        
+
         this.knowledgeRadarData.values = [
           knowledgeAnalysis.scores.knowledgeDepth,
           knowledgeAnalysis.scores.practicalExperience,
@@ -309,18 +309,18 @@ ${questions.map((q, index) => `
           knowledgeAnalysis.scores.learningAbility,
           knowledgeAnalysis.scores.innovation
         ];
-        
+
         this.knowledgeScore = knowledgeAnalysis.overallScore;
         this.skillStrengths = knowledgeAnalysis.strengths;
         this.skillWeaknesses = knowledgeAnalysis.weaknesses;
-        
+
       } catch (error) {
         console.error('专业知识分析失败:', error);
         // 使用默认值
         this.setDefaultKnowledgeData();
       }
     },
-    
+
     // 处理面试表现数据
     processPerformanceData() {
       // 如果有图像分析结果，使用图像分析的数据
@@ -333,7 +333,7 @@ ${questions.map((q, index) => `
           facialExpression: [],
           professionalImage: []
         };
-        
+
         this.interviewData.imageAnalysisResults.forEach(result => {
           const analysis = result.analysis.analysis;
           allScores.eyeContact.push(analysis.eyeContact.score);
@@ -342,7 +342,7 @@ ${questions.map((q, index) => `
           allScores.facialExpression.push(analysis.facialExpression.score);
           allScores.professionalImage.push(analysis.professionalImage.score);
         });
-        
+
         // 计算平均分
         const avgScores = {
           eyeContact: this.calculateAverage(allScores.eyeContact),
@@ -351,7 +351,7 @@ ${questions.map((q, index) => `
           facialExpression: this.calculateAverage(allScores.facialExpression),
           professionalImage: this.calculateAverage(allScores.professionalImage)
         };
-        
+
         // 设置雷达图数据
         this.performanceRadarData.indicator = [
           { name: '眼神接触', max: 10 },
@@ -361,14 +361,14 @@ ${questions.map((q, index) => `
           { name: '专业形象', max: 10 },
           { name: '整体气质', max: 10 }
         ];
-        
+
         // 计算整体气质分数（其他分数的加权平均）
-        const overallPresence = (avgScores.eyeContact * 0.2 + 
-                                avgScores.bodyLanguage * 0.2 + 
-                                avgScores.appearance * 0.2 + 
-                                avgScores.facialExpression * 0.2 + 
+        const overallPresence = (avgScores.eyeContact * 0.2 +
+                                avgScores.bodyLanguage * 0.2 +
+                                avgScores.appearance * 0.2 +
+                                avgScores.facialExpression * 0.2 +
                                 avgScores.professionalImage * 0.2);
-        
+
         this.performanceRadarData.values = [
           avgScores.eyeContact,
           avgScores.bodyLanguage,
@@ -377,18 +377,18 @@ ${questions.map((q, index) => `
           avgScores.professionalImage,
           overallPresence
         ];
-        
+
         this.performanceScore = this.calculateAverage(this.performanceRadarData.values);
-        
+
         // 提取优缺点
         const latestAnalysis = this.interviewData.imageAnalysisResults[this.interviewData.imageAnalysisResults.length - 1].analysis;
         this.performanceStrengths = latestAnalysis.strengths || [];
         this.performanceWeaknesses = latestAnalysis.improvements || [];
-        
+
       } else if (this.interviewData.performanceAnalysis) {
         // 使用综合表现分析数据
         const dimensions = this.interviewData.performanceAnalysis.dimensions;
-        
+
         this.performanceRadarData.indicator = [
           { name: '专业技能', max: 10 },
           { name: '沟通表达', max: 10 },
@@ -397,7 +397,7 @@ ${questions.map((q, index) => `
           { name: '岗位匹配', max: 10 },
           { name: '综合素质', max: 10 }
         ];
-        
+
         this.performanceRadarData.values = [
           dimensions.technicalSkills.score,
           dimensions.communication.score,
@@ -406,12 +406,12 @@ ${questions.map((q, index) => `
           dimensions.jobFit.score,
           this.interviewData.performanceAnalysis.overallScore
         ];
-        
+
         this.performanceScore = this.interviewData.performanceAnalysis.overallScore;
         this.performanceStrengths = this.interviewData.performanceAnalysis.highlights || [];
         this.performanceWeaknesses = this.interviewData.performanceAnalysis.weaknesses || [];
         this.hiringRecommendation = this.interviewData.performanceAnalysis.hiringRecommendation;
-        
+
         // 设置推荐样式
         this.setRecommendationClass();
       } else {
@@ -419,13 +419,13 @@ ${questions.map((q, index) => `
         this.setDefaultPerformanceData();
       }
     },
-    
+
     // 生成AI总结
     async generateAISummary() {
       try {
         const jobInfo = this.interviewData.jobInfo;
         const summary = this.interviewData.summary;
-        
+
         const summaryPrompt = `
 请基于以下面试信息，生成一份简洁的面试总结（150-200字）：
 
@@ -465,19 +465,19 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         });
 
         this.aiSummary = response.choices[0].message.content.trim();
-        
+
       } catch (error) {
         console.error('生成AI总结失败:', error);
         this.aiSummary = `在本次${this.interviewData.jobInfo?.position || ''}岗位面试中，应聘者完成了${this.interviewData.summary.answeredQuestions}道题目的回答。从专业知识角度看，应聘者展现了一定的技术基础，专业评分${this.knowledgeScore}/10。在面试表现方面，应聘者的综合表现评分为${this.performanceScore}/10。建议应聘者在今后继续加强专业技能的学习，同时提升面试技巧，以更好地展现自己的能力和潜力。`;
       }
     },
-    
+
     // 初始化雷达图
     initRadarCharts() {
       // 专业知识雷达图
       const knowledgeChartDom = this.$refs.knowledgeChart;
       const knowledgeChart = echarts.init(knowledgeChartDom);
-      
+
       const knowledgeOption = {
         radar: {
           indicator: this.knowledgeRadarData.indicator,
@@ -523,13 +523,13 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           }]
         }]
       };
-      
+
       knowledgeChart.setOption(knowledgeOption);
-      
+
       // 面试表现雷达图
       const performanceChartDom = this.$refs.performanceChart;
       const performanceChart = echarts.init(performanceChartDom);
-      
+
       const performanceOption = {
         radar: {
           indicator: this.performanceRadarData.indicator,
@@ -575,21 +575,21 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           }]
         }]
       };
-      
+
       performanceChart.setOption(performanceOption);
-      
+
       // 响应式
       window.addEventListener('resize', () => {
         knowledgeChart.resize();
         performanceChart.resize();
       });
     },
-    
+
     // 计算平均值
     calculateAverage(arr) {
       return arr.reduce((sum, val) => sum + val, 0) / arr.length;
     },
-    
+
     // 设置默认专业知识数据
     setDefaultKnowledgeData() {
       this.knowledgeRadarData.indicator = [
@@ -600,13 +600,13 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         { name: '学习能力', max: 10 },
         { name: '创新思维', max: 10 }
       ];
-      
+
       this.knowledgeRadarData.values = [7, 6, 7, 7, 8, 6];
       this.knowledgeScore = 6.8;
       this.skillStrengths = ['基础知识扎实', '学习态度积极', '思路清晰'];
       this.skillWeaknesses = ['实践经验不足', '技术深度有待提高', '创新能力需加强'];
     },
-    
+
     // 设置默认面试表现数据
     setDefaultPerformanceData() {
       this.performanceRadarData.indicator = [
@@ -617,13 +617,13 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         { name: '专业形象', max: 10 },
         { name: '整体气质', max: 10 }
       ];
-      
+
       this.performanceRadarData.values = [7, 7, 8, 7, 7, 7];
       this.performanceScore = 7.2;
       this.performanceStrengths = ['着装得体', '态度认真', '表达流畅'];
       this.performanceWeaknesses = ['略显紧张', '眼神交流不够', '肢体语言可以更自信'];
     },
-    
+
     // 设置推荐样式
     setRecommendationClass() {
       if (this.hiringRecommendation.includes('强烈推荐')) {
@@ -636,13 +636,13 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         this.recommendationClass = 'not-recommend';
       }
     },
-    
+
     // 返回首页
     goHome() {
       this.$router.push('/job_info');
     }
   },
-  
+
   beforeUnmount() {
     // 清理图表实例
     ['knowledgeChart', 'performanceChart'].forEach(ref => {
@@ -727,12 +727,12 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
     max-height: calc(100vh - 120px);
     overflow-y: auto;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    
+
     @media (max-width: 1024px) {
       width: 100%;
       max-height: 400px;
     }
-    
+
     .chat-title {
       font-size: 18px;
       font-weight: 600;
@@ -744,19 +744,19 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
 
     .chat-item {
       margin-bottom: 1.2rem;
-      
+
       .chat-bubble {
         .role-tag {
           font-size: 13px;
           font-weight: 500;
           margin-bottom: 0.5rem;
           color: #67c23a;
-          
+
           &.interviewer {
             color: #409eff;
           }
         }
-        
+
         .content {
           font-size: 14px;
           line-height: 1.6;
@@ -764,18 +764,18 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           background: #f4f4f5;
           padding: 0.8rem 1rem;
           border-radius: 8px;
-          
+
           .interviewer & {
             background: #ecf5ff;
           }
         }
       }
     }
-    
+
     &::-webkit-scrollbar {
       width: 6px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: #dcdfe6;
       border-radius: 3px;
@@ -796,28 +796,28 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         display: flex;
         gap: 3rem;
         margin-bottom: 2.5rem;
-        
+
         @media (max-width: 768px) {
           flex-direction: column;
           gap: 2rem;
         }
-        
+
         .chart-wrapper {
           flex: 1;
           text-align: center;
-          
+
           h3 {
             font-size: 16px;
             font-weight: 600;
             color: #303133;
             margin-bottom: 1rem;
           }
-          
+
           .radar-chart {
             width: 100%;
             height: 280px;
           }
-          
+
           .chart-score {
             margin-top: 0.5rem;
             font-size: 14px;
@@ -826,11 +826,11 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           }
         }
       }
-      
+
       // AI总结
       .ai-summary {
         margin-bottom: 2.5rem;
-        
+
         h3 {
           font-size: 18px;
           font-weight: 600;
@@ -838,7 +838,7 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           margin-bottom: 1rem;
           display: flex;
           align-items: center;
-          
+
           &::before {
             content: '';
             width: 4px;
@@ -848,12 +848,12 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
             border-radius: 2px;
           }
         }
-        
+
         .summary-content {
           background: #f5f7fa;
           border-radius: 8px;
           padding: 1.5rem;
-          
+
           p {
             font-size: 15px;
             line-height: 1.8;
@@ -869,7 +869,7 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
         flex-direction: column;
         gap: 2rem;
         margin-bottom: 2rem;
-        
+
         .skill-analysis, .performance-analysis {
           h3 {
             font-size: 18px;
@@ -878,7 +878,7 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            
+
             &::before {
               content: '';
               width: 4px;
@@ -888,23 +888,23 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
               border-radius: 2px;
             }
           }
-          
+
           .analysis-content {
             display: flex;
             gap: 2rem;
-            
+
             @media (max-width: 768px) {
               flex-direction: column;
               gap: 1rem;
             }
-            
+
             .cons-box, .pros-box {
               flex: 1;
               background: #fef0f0;
               border-radius: 8px;
               padding: 1.2rem;
               border: 1px solid #fde2e2;
-              
+
               h4 {
                 font-size: 15px;
                 font-weight: 600;
@@ -912,24 +912,25 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
                 margin-bottom: 0.8rem;
                 display: flex;
                 align-items: center;
-                
+
                 &::before {
                   content: '⚠️';
                   margin-right: 6px;
                 }
               }
-              
+
               ul {
                 list-style: none;
                 padding: 0;
-                
+
                 li {
                   font-size: 14px;
                   line-height: 1.8;
                   color: #606266;
                   padding-left: 1.2rem;
                   position: relative;
-                  
+                  text-align: left;
+
                   &::before {
                     content: '•';
                     position: absolute;
@@ -939,19 +940,19 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
                 }
               }
             }
-            
+
             .pros-box {
               background: #f0f9ff;
               border-color: #d0e9ff;
-              
+
               h4 {
                 color: #67c23a;
-                
+
                 &::before {
                   content: '✅';
                 }
               }
-              
+
               ul li::before {
                 color: #67c23a;
               }
@@ -959,11 +960,11 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           }
         }
       }
-      
+
       // 录用建议
       .hiring-recommendation {
         margin-top: 2rem;
-        
+
         h3 {
           font-size: 18px;
           font-weight: 600;
@@ -971,7 +972,7 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
           margin-bottom: 1rem;
           display: flex;
           align-items: center;
-          
+
           &::before {
             content: '';
             width: 4px;
@@ -981,32 +982,32 @@ ${[...this.skillWeaknesses, ...this.performanceWeaknesses].slice(0, 3).join('、
             border-radius: 2px;
           }
         }
-        
+
         .recommendation-box {
           padding: 1.2rem;
           border-radius: 8px;
           font-size: 15px;
-          font-weight: 500;
+          font-weight: 1000;
           text-align: center;
-          
+
           &.strong-recommend {
             background: #f0f9ff;
             color: #409eff;
             border: 2px solid #409eff;
           }
-          
+
           &.recommend {
             background: #f0f9ff;
             color: #67c23a;
             border: 2px solid #67c23a;
           }
-          
+
           &.consider {
             background: #fdf6ec;
             color: #e6a23c;
             border: 2px solid #e6a23c;
           }
-          
+
           &.not-recommend {
             background: #fef0f0;
             color: #f56c6c;

@@ -1,7 +1,7 @@
 <template>
   <div class="interview-page">
     <div class="left-col">
-      <img src="@/assets/logo.png" alt="模拟面试示例" class="preview-img" />
+      <img src="@/assets/interview.png" alt="模拟面试示例" class="preview-img" />
       <div class="guide">
         <h2>模拟面试</h2>
         <p>模拟面试由 AI 担任面试官，还原真实面试场景。</p>
@@ -110,7 +110,7 @@ export default {
       this.interviewData = parsed;
       // 正确获取题目数据
       this.questions = parsed.interviewQuestions;
-      
+
       console.log('=== 配置页面数据 ===');
       console.log('获取到的面试数据:', this.interviewData);
       console.log('题目数据:', this.questions);
@@ -142,7 +142,7 @@ export default {
         alert('请先确认听到测试音频');
         return;
       }
-      
+
       // 检查数据是否存在
       if (!this.interviewData || !this.questions) {
         alert('面试数据丢失，请返回重新配置');
@@ -152,7 +152,7 @@ export default {
 
       // 将所有题目合并为一个数组
       const allQuestions = [];
-      
+
       // 添加公司相关问题
       if (this.questions.companyQuestions && this.questions.companyQuestions.length > 0) {
         this.questions.companyQuestions.forEach(q => {
@@ -163,7 +163,7 @@ export default {
           });
         });
       }
-      
+
       // 添加技术问题
       if (this.questions.technicalQuestions && this.questions.technicalQuestions.length > 0) {
         this.questions.technicalQuestions.forEach(q => {
@@ -174,7 +174,7 @@ export default {
           });
         });
       }
-      
+
       // 添加编程题目
       if (this.questions.codingQuestions && this.questions.codingQuestions.length > 0) {
         this.questions.codingQuestions.forEach(q => {
@@ -220,7 +220,7 @@ export default {
 
       // 存储完整配置
       sessionStorage.setItem('finalInterviewConfig', JSON.stringify(fullConfig));
-      
+
       console.log('=== 最终配置数据 ===');
       console.log('所有题目数量:', allQuestions.length);
       console.log('题目列表:', allQuestions);
@@ -268,7 +268,7 @@ export default {
         margin-bottom: 1rem;
       }
       p {
-        line-height: 1.6;
+        line-height: 3;
         margin-bottom: 1rem;
       }
       ul {
@@ -277,7 +277,8 @@ export default {
         li {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 1rem;
+          line-height: 2;
           margin-bottom: 0.5rem;
           svg {
             width: 1.2rem;
@@ -292,14 +293,15 @@ export default {
     flex: 1;
     background: white;
     border-radius: 10px;
-    padding: 2rem;
+    padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
     .logo {
       text-align: center;
       font-size: 2.5rem;
       color: #2c82c9;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
+      font-family: 'Microsoft YaHei';
     }
 
     .config-form {
@@ -363,13 +365,14 @@ export default {
 
     .sound-test-section {
       margin: 2rem 0;
-      padding: 1.5rem;
+      padding: 0.5rem;
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
       h2 {
         color: #2c82c9;
+        margin-top: 0.5rem;
         margin-bottom: 1.2rem;
       }
 
@@ -379,13 +382,16 @@ export default {
 
       .confirmation {
         display: flex;
-        gap: 1rem;
+        gap: 3rem;
+        justify-content: center;
 
         button {
           padding: 0.8rem 1.5rem;
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.3s;
+          margin-bottom: 0.5rem;
+
 
           &.confirm-btn {
             background: #27ae60;

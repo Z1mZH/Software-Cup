@@ -20,12 +20,12 @@
         @drop="handleDragUpload"
         :class="{ dragging: isDragging }"
       >
-        <img
-          src="@/assets/upload_CV1(1).png"
-          alt="上传"
-          class="upload-img"
-          style="width: 70px; height: 70px;"
-        />
+        <icon-park
+            type="People-upload"
+            size="70"
+            fill="#999"
+            class="feature-icon"
+          />
         <p class="upload-tip">拖拽简历到此处上传</p>
         <p class="upload-tip secondary">或点击选择文件上传</p>
         <!-- 核心修复：添加@change事件 -->
@@ -79,7 +79,9 @@ import StepBar from "@/components/StepBar.vue";
 import OpenAI from "openai";
 import mammoth from 'mammoth';
 // 修改 pdfjs 导入方式
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+// import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist/webpack';
+import {IconPark} from "@icon-park/vue-next/es/all";
 
 // 设置 worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -92,7 +94,7 @@ const openai = new OpenAI({
 });
 
 export default {
-  components: { StepBar, Loading },
+  components: {IconPark, StepBar, Loading },
   data() {
     return {
       steps: [
@@ -122,6 +124,7 @@ export default {
   },
   mounted() {
     this.currentLength = this.resumeText.length;
+    console.log('pdfjsLib loaded:', pdfjsLib)
   },
   methods: {
     // 打开文件选择框
@@ -449,16 +452,6 @@ ${resumePart}
     background: #f0f7ff;
   }
       }
-
-      .el-icon-plus {
-        font-size: 40px;
-        color: #409eff;
-        margin-bottom: 12px;
-        @media (max-width: 768px) {
-          font-size: 30px;
-        }
-      }
-
       .upload-tip {
         font-size: 16px;
         color: #666;
@@ -485,7 +478,7 @@ ${resumePart}
       position: relative;
       
       .textarea {
-        width: 100% !important;
+        width: 96% !important;
         padding: 15px;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
