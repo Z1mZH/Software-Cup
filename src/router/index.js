@@ -9,6 +9,7 @@ import Device_Test from "@/view/Interview/Device_Test.vue";
 import Fin_Preparation from "@/view/Interview/Fin_Preparation.vue";
 import BasedView from "@/view/Mock/BasedView.vue";
 import CodingView from "@/view/Mock/CodingView.vue";
+import UserReview from "@/view/review/UserReview.vue";
 
 const routes = [
     {
@@ -65,6 +66,11 @@ const routes = [
         path: '/coding_view',
        name:'Coding_View',
        component: CodingView
+    },
+    {
+        path: '/review',
+       name:'UserReview',
+       component: UserReview
     }
 ];
 
